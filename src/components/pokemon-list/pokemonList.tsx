@@ -7,6 +7,8 @@ import {
   Grid,
   Box,
   TextField,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import PokemonStatesAndTabs from "../pokemon-states/pokemonStates";
 import PokemonTypes from "../pokemon-types/pokemonTypes";
@@ -17,15 +19,32 @@ interface PokemonListProp {
 
 const PokemonList = ({ pokemons }: PokemonListProp) => {
   const [searchText, setSearchText] = useState("");
+  const [sortBy, setSortBy] = useState("name");
   const [filteredPokemons, setFilteredPokemons] = useState(pokemons);
 
   const handleSearchChange = (event) => {
     const searchText = event.target.value;
     setSearchText(searchText);
+    filterPokemonnIfPossible(searchText, sortBy);
+  };
 
-    const filtered = pokemons.filter((pokemon) =>
+  const handleSortChange = (event) => {
+    setSortBy(event.target.value);
+    filterPokemonnIfPossible(searchText, sortBy);
+  };
+
+  const filterPokemonnIfPossible = (searchText, sortBy) => {
+    let filtered = pokemons.filter((pokemon) =>
       pokemon.name.toLowerCase().includes(searchText.toLowerCase())
     );
+
+    if (sortBy === "states") {
+      filtered = filtered.sort(
+        (a, b) => a.stats[0].base_stat - b.stats[0].base_stat
+      );
+    } else {
+      filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
     setFilteredPokemons(filtered);
   };
 
@@ -51,6 +70,15 @@ const PokemonList = ({ pokemons }: PokemonListProp) => {
           inputProps: { style: { color: "white" } },
         }}
       />
+      <Select
+        value={sortBy}
+        onChange={handleSortChange}
+        variant="outlined"
+        style={{ color: "white", minWidth: 120, background: "#424242" }}
+      >
+        <MenuItem value="name">Sort by Name</MenuItem>
+        <MenuItem value="states">Sort by States</MenuItem>
+      </Select>
       <Grid container spacing={2} justifyContent="center">
         {filteredPokemons.map((pokemon) => (
           <Grid item key={pokemon.id} xs={12} sm={6} md={4}>
